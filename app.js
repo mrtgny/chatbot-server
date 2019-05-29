@@ -32,9 +32,29 @@ wsServer.on('request', function (request) {
             }
         }
 
+        if (!!request.suggest) {
+            connection.send(JSON.stringify(new Suggestion(request)));
+        } else {
+            const response = new Response(request);
+            const {message, author} = response;
+            const init = request.message !== 'init-chatbot';
+            console.log("RESPONSE", response);
+
+            if (init) {
+                connection.send(JSON.stringify(request));
+                connection.send(JSON.stringify({author, status: "typing"}));
+            }
+            setTimeout(() => {
+                connection.send(JSON.stringify({...response, message}));
+                // if (response.name) {
+                //     connection.send(JSON.stringify({author: 'chatbot', name: response.name}));
+                // }
+            }, init ? message.length * 50 : 0);
+
+        }
+
         console.log("request", request);
-        const response = !!request.suggest ? new Suggestion(request) : new Response(request);
-        connection.send(JSON.stringify(response))
+
     });
 
     connection.on('close', function (connection) {

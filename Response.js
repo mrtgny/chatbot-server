@@ -95,22 +95,26 @@ const counts = ["a", "two", "three", "four", "five", "six", "seven", "eight", "n
 
 
 const standardAnswers = [
-    [["how are you", "what's up", "how is it going"], ["fine", "good", "ok"], ["bad", "sad"], ["thank you"], ["have a nice day", "bye", "take care yourself", "good bye"]],
+    [["how are you", "what's up", "how is it going"], ["fine", "m good", "ok"], ["bad", "sad"], ["thank you"], ["have a nice day", "bye", "take care yourself", "good bye"]],
     [["I am fine. Thank you for asking. What about you?", "I'm ok. What about you?"], ["I'm glad to hear that!"], ["I'm sorry to hear that :( How can i help you?"], ["You are welcome :)"], ["Have a nice day :)", "Good bye!", "Bye bye!"]]
 ];
+
 
 let oldCoffee = "";
 let oldSize = "";
 let oldCount = "";
 let oldRequestedCoffees = [];
 let missedSize = false;
+let nameRequested = false;
+let name = "";
 
 function reset() {
     oldSize = "";
     oldCoffee = "";
     oldCount = "";
     oldRequestedCoffees = [];
-    missedSize = false
+    missedSize = false;
+    nameRequested = false;
 }
 
 function capitalize(word) {
@@ -153,29 +157,34 @@ class Response {
         if (init) reset();
 
         console.log("RESPONSE", message);
-
+        if (nameRequested)
+            name = request.message;
         this.response.author = "chatbot";
         this.response.list = this.prepareList(message);
         this.response.message = init ?
             "Hello, welcome to CoffeeInLove. What do you desire?" :
-            missedSize ? this.fixMissedSize(message) :
-                this.parseRequest(message);
+            missedSize ?
+                this.fixMissedSize(message) :
+                nameRequested ?
+                    this.prepareResponse() :
+                    this.parseRequest(message);
         this.response.date = new Date();
 
         if (!this.response.message && !this.response.list.length) {
             this.response.message = "Excuse me. I did not understand what you want. Could you try again?"
         }
-
-        return init ? [this.response] : [request, this.response];
+        this.response.name = name;
+        return this.response;
     }
 
     fixMissedSize(size) {
         if (sizes.map(i => i.name).filter(i => i === size).length) {
             oldRequestedCoffees.filter(i => !i.size && i.coffee)[0].size = size;
+            missedSize = false;
             return this.prepareResponse();
         } else {
             this.response.list = sizes.map(i => i.name);
-            return "Please select a exists coffee size";
+            return "Please select an exists coffee size";
         }
 
     }
@@ -191,8 +200,9 @@ class Response {
             const isHelloSelected = request.toLowerCase().match(helloRegex);
 
             if (isHelloSelected) {
-                selectedHello = capitalize(hello) + ". ";
+                selectedHello += capitalize(hello) + ". ";
             }
+
         });
         return selectedHello + this.prepareStandardAnswers(request);
     }
@@ -206,7 +216,7 @@ class Response {
             const match = request.toLowerCase().match(requestRegex);
             if (match) {
                 const answerIndex = parseInt(Math.random() * (responses.length));
-                standardAnswer = responses[answerIndex];
+                standardAnswer += responses[answerIndex] + " ";
             }
         });
 
@@ -309,7 +319,15 @@ class Response {
         const noCoffee = oldRequestedCoffees.filter(i => !i.coffee);
         const noSizeCoffee = oldRequestedCoffees.filter(i => !i.size && i.coffee);
         let respSent = "";
-        if (!noSize.length && !noCoffee.length) {
+
+        if (noSizeCoffee.length) {
+            let sent = noSizeCoffee[0].coffee;
+            respSent = "Please pick a size of your " + sent + ".";
+            this.response.list = sizes.map(i => capitalize(i.name));
+            missedSize = true
+        }
+
+        if (!noSize.length && !noCoffee.length && name.length) {
             let sent = "";
             let price = 0;
             oldRequestedCoffees.forEach((coffee, index, length) => {
@@ -324,13 +342,14 @@ class Response {
 
             respSent += `Preparing your ${sent}. ${price}$ please.`;
             reset();
+
         }
-        if (noSizeCoffee.length) {
-            let sent = noSizeCoffee[0].coffee;
-            respSent = "Please pick a size of your " + sent + ".";
-            this.response.list = sizes.map(i => capitalize(i.name));
-            missedSize = true
+
+        if (!noSize.length && !noCoffee.length && !name.length) {
+            respSent = "Could you tell your name?";
+            nameRequested = true;
         }
+
         return respSent;
 
     }
