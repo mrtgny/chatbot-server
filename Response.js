@@ -112,6 +112,7 @@ function reset() {
     oldSize = "";
     oldCoffee = "";
     oldCount = "";
+    name = "";
     oldRequestedCoffees = [];
     missedSize = false;
     nameRequested = false;
@@ -156,9 +157,13 @@ class Response {
 
         if (init) reset();
 
-        console.log("RESPONSE", message);
-        if (nameRequested)
+        console.log("REQUEST", message);
+
+        if (nameRequested) {
             name = request.message;
+            this.response.name = name.split(" ").map(i => capitalize(i)).join(" ");
+        }
+
         this.response.author = "chatbot";
         this.response.list = this.prepareList(message);
         this.response.message = init ?
@@ -173,7 +178,7 @@ class Response {
         if (!this.response.message && !this.response.list.length) {
             this.response.message = "Excuse me. I did not understand what you want. Could you try again?"
         }
-        this.response.name = name;
+
         return this.response;
     }
 
@@ -257,6 +262,7 @@ class Response {
         for (let i = 0; i < coffeeRegex.length; i++) {
             const reg = coffeeRegex[i];
             const match = request.toLowerCase().match(reg);
+            console.log("IIIIII", i);
             //console.log("REQUEST BEFORE", request);
             if (match) {
                 const index = match["index"];
@@ -296,16 +302,23 @@ class Response {
                     default:
                         empty = true;
                 }
-
                 coffee = (coffee || []).join(" ");
 
                 const price = (counts.indexOf(count) > -1 ? counts.indexOf(count) + 1 : parseInt(count) || 1) * (((coffees.filter(i => i.name === coffee)[0] || {}).price || 0) + ((sizes.filter(i => i.name === size)[0] || {}).price || 0));
                 requestedCoffees.push({count, size, coffee, price});
-                reset();
-                if (empty)
+                //reset();
+                if (empty) {
+                    empty = false;
                     i = 0;
+                }
+                i = -1;
             }
         }
+        this.response.count = 0;
+        requestedCoffees.map(i => counts.indexOf(i.count) + 1).forEach(i => {
+            this.response.count += i;
+        });
+
         oldRequestedCoffees = [...requestedCoffees];
         return this.prepareResponse()
     }
@@ -320,6 +333,11 @@ class Response {
         const noSizeCoffee = oldRequestedCoffees.filter(i => !i.size && i.coffee);
         let respSent = "";
 
+        if (!noSize.length && !noCoffee.length && !name.length) {
+            respSent = "Could you tell your name?";
+            nameRequested = true;
+        }
+
         if (noSizeCoffee.length) {
             let sent = noSizeCoffee[0].coffee;
             respSent = "Please pick a size of your " + sent + ".";
@@ -331,6 +349,11 @@ class Response {
             let sent = "";
             let price = 0;
             oldRequestedCoffees.forEach((coffee, index, length) => {
+                this.response.coffees = [...(this.response.coffees || []), {
+                    coffee: coffee.coffee.split(" ").map(i => capitalize(i)).join(" "),
+                    size: coffee.size,
+                    count: coffee.count ? counts.indexOf(coffee.count) > -1 ? counts.indexOf(coffee.count) + 1 : parseInt(coffee.count) : 1
+                }];
                 if (!index)
                     sent += coffee.count + " " + coffee.size + " " + coffee.coffee;
                 else if (length - 1 == index && length > 1)
@@ -343,11 +366,6 @@ class Response {
             respSent += `Preparing your ${sent}. ${price}$ please.`;
             reset();
 
-        }
-
-        if (!noSize.length && !noCoffee.length && !name.length) {
-            respSent = "Could you tell your name?";
-            nameRequested = true;
         }
 
         return respSent;
