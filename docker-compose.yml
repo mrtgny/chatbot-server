@@ -4,8 +4,8 @@ services:
     build:
       context: ./
     ports:
-      - "3001:3000"
-    container_name: lecture-schedule
+      - "4001:3000"
+    container_name: coffeebot-backend
     volumes:
        - ./:/usr/src/app/mrtgny/website
        - /usr/src/app/mrtgny/website/node_modules
