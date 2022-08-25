@@ -6,6 +6,3 @@ services:
     ports:
       - "4001:8000"
     container_name: coffeebot-backend
-    volumes:
-       - ./:/usr/src/app/mrtgny/website
-       - /usr/src/app/mrtgny/website/node_modules
