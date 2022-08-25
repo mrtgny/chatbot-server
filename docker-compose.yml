@@ -4,5 +4,5 @@ services:
     build:
       context: ./
     ports:
-      - "4001:8000"
+      - "4003:8000"
     container_name: coffeebot-backend
