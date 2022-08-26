@@ -1,6 +1,7 @@
 version: '3'
 services:
   nodejs-server:
+    restart: always
     build:
       context: ./
     ports:
