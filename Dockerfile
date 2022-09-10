@@ -1,11 +1,10 @@
-FROM node:16-alpine
-
-WORKDIR /usr/src/app/mrtgny
-
+FROM alpine
+RUN apk add --update nodejs npm
+RUN npm i -g yarn
+WORKDIR /usr/src/app/reactivers
 COPY . .
-
-RUN npm install
-
+RUN yarn
+RUN npm run build
 EXPOSE 8000
 
-CMD ["npm", "start"]
+CMD  ["npm", "start"]

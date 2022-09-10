@@ -1,5 +1,5 @@
 {
-  "name": "express-sequelize-ts",
+  "name": "chatbot-server",
   "version": "1.0.0",
   "description": "Express, sequelize, typescript, unit test",
   "main": "src/index.ts",
