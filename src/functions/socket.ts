@@ -54,7 +54,7 @@ const handleChat = (request: IRequest) => {
         sendMessage({ ...response, status: 'typing' }, id);
         if (nameRequested) {
             data.name = request.message;
-            response.name = name!.split(" ").map(i => capitalize(i)).join(" ");
+            response.name = request.message!.split(" ").map(i => capitalize(i)).join(" ");
         }
         response.list = prepareList(request)
         response.message = missedSize ?
