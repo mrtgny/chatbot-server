@@ -20,7 +20,9 @@ app.use(express.urlencoded({ extended: true }));
 const initServer = async () => {
     await initSocketServer(wsServer);
     await init(app)
-    return server.listen(PORT)
+    return server.listen(PORT, () => {
+        console.log("SERVER IS RUNNING AT", PORT)
+    })
 }
 
 export default initServer
