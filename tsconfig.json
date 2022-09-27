@@ -1,18 +1,18 @@
 {
     "compilerOptions": {
         "target": "es6",
-        "module": "commonjs",
+        "module": "Node16",
         "outDir": "./dist/server",
-        "strict": true,
-        "sourceMap": false,
+        "strict": false,
+        "sourceMap": true,
         "esModuleInterop": true,
         "typeRoots": [
             "node_modules/@types"
         ]
     },
     "exclude": [
-        "./src/**/*.graphql",
         "dist",
+        "src/test",
         "node_modules"
     ]
 }
