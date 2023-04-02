@@ -7,7 +7,7 @@ RUN npm i -g yarn
 WORKDIR /usr/src/build/reactivers
 COPY . .
 RUN yarn install --production --frozen-lockfile --network-timeout 100000
-RUN yarn global add typescript
+RUN yarn global add typescript@4.7.3
 RUN npm run build
 RUN yarn global remove typescript
 
